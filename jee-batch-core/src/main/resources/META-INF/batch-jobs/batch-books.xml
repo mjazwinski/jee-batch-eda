@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jsl:job id="idvalue0" restartable="" version="1.0"
+	xmlns:jsl="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/jobXML_1_0.xsd ">
+	
+	<jsl:step id="move-file" next="resource-router">
+		<jsl:batchlet ref="initializeResourceImport" />
+	</jsl:step>
+	
+	<jsl:flow id="resource-router">
+	
+		<jsl:step id="resource-processor" next="path-decision">
+			<jsl:chunk item-count="1">
+				<jsl:reader ref="knowledgeResourceReader">
+					<jsl:properties>
+						<jsl:property name="fileName" value="#{partitionPlan['fileName']}"/>
+					</jsl:properties>
+				</jsl:reader>
+	            <jsl:processor ref="knowledgeResourceProcessor" />
+				<jsl:writer ref="knowledgeResourceWriter" />
+				<jsl:skippable-exception-classes>
+					<jsl:include class="pl.spiralarchitect.kplan.batch.InvalidResourceFormatException"/>
+				</jsl:skippable-exception-classes>
+				<jsl:retryable-exception-classes />
+				<jsl:no-rollback-exception-classes />
+			</jsl:chunk>
+			<jsl:partition>
+				<jsl:plan partitions="2" threads="2">
+					<jsl:properties partition="0">
+						<jsl:property name="fileName" value="articles1.txt"/>
+					</jsl:properties>
+					<jsl:properties partition="1">
+						<jsl:property name="fileName" value="articles2.txt"/>
+					</jsl:properties>
+				</jsl:plan>
+				<!-- the mapper element is mutually exclusive with the plan element 
+				- but spec does not say what will happen if we place both in XML -->
+				<!-- <jsl:mapper ref="cdiBeanName" /> -->
+				<!-- Collector will prepare intermediate results -->
+				<jsl:collector ref="knowledgeResourcePartitionCollector" />
+				<!-- Analyzer will execute on main thread and collect results passed from collectors -->
+				<jsl:analyzer ref="knowledgeResourcePartitionAnalyzer" />
+			</jsl:partition>
+		</jsl:step>
+		
+		<jsl:decision id="path-decision" ref="pathDecider">
+			<jsl:next on="STORE" to="store"/>
+			<jsl:next on="SAVE_BOOKMARK" to="bookmark"/>
+			<jsl:end on="NO_RESOURCES"/>
+		</jsl:decision>
+	
+		<jsl:step id="store">
+			<jsl:batchlet ref="knowledgeResourceStore"></jsl:batchlet>
+		</jsl:step>
+		
+		<jsl:step id="bookmark">
+			<jsl:batchlet ref="knowledgeBookmarkWriter"></jsl:batchlet>
+		</jsl:step>
+	</jsl:flow>
+	
+</jsl:job>

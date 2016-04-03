@@ -1,0 +1,4 @@
+article:Python for data analysis;Published: 2015
+article:Stream processing with Apache Spark;Published: 2016
+article:Hadoop 2 and Hive;Published: 2015
+article:Java EE 7 Testing with Arquillian;Published: 2015

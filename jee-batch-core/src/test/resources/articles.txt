@@ -1,0 +1,3 @@
+article:Scala does not bite;Published: 2015
+article:Reliable message processing with AMQP;Published: 2016
+article:Hadoop 2 and Hive;Published: 2015

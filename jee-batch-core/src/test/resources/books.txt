@@ -1,0 +1,3 @@
+book:An intro to scala;Published: 2015
+book:Java EE 7 Web Services seriously;Published: 2016
+book:Batch processing with Apache Pig;Published: 2015
